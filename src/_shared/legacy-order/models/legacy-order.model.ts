@@ -11,6 +11,9 @@ import { IsDate, IsNumber, IsString, Length, Max, Min } from "class-validator";
  * prodId - numeric  | length 10 | 0 padded
  * value - numeric (decimal)| length 12 | space padded 
  * date - numerics (YYYYMMDD) | length 8
+ * 
+ * example:
+ * 0000000070                              Palmer Prosacco00000007530000000003     1836.7420210308
  */
 export class LegacyOrder {
     @IsNumber()

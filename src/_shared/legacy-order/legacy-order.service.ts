@@ -10,39 +10,44 @@ export class LegacyOrderService {
         const lines = data.split('\n');
         const orders: LegacyOrder[] = [];
 
-        for (const line of lines) {
-            // skip empty lines
-            if (line.trim().length === 0) {
-                continue;
+        try {
+            for (const line of lines) {
+                // skip empty lines
+                if (line.trim().length === 0) {
+                    continue;
+                }
+
+                const userId = +(line.substring(0, 10).trim());
+                const userName = line.substring(10, 55).trim();
+                const orderId = +(line.substring(55, 65).trim());
+                const prodId = +(line.substring(65, 75).trim());
+                const value = +(line.substring(75, 87).trim());
+                const date = line.substring(87, 95).trim();
+
+                const dateyear = parseInt(date.substring(0, 4), 10);
+                const datemonth = parseInt(date.substring(4, 6), 10) - 1;
+                const dateday = parseInt(date.substring(6, 8), 10);
+
+                const parsedOrder = new LegacyOrder();
+                parsedOrder.userId = userId;
+                parsedOrder.userName = userName;
+                parsedOrder.orderId = orderId;
+                parsedOrder.prodId = prodId;
+                parsedOrder.value = value;
+                parsedOrder.date = new Date(dateyear, datemonth, dateday);
+
+                const errors = await validate(parsedOrder)
+
+                if (errors.length > 0) {
+                    return { success: false, data: [] };
+                }
+
+                orders.push(parsedOrder);
             }
-
-            const userId = parseInt(line.substring(0, 10).trim(), 10);
-            const userName = line.substring(10, 55).trim();
-            const orderId = parseInt(line.substring(55, 65).trim(), 10);
-            const prodId = parseInt(line.substring(65, 75).trim(), 10);
-            const value = parseFloat(line.substring(75, 87).trim());
-            const date = line.substring(87, 95).trim();
-
-            const dateyear = parseInt(date.substring(0, 4), 10);
-            const datemonth = parseInt(date.substring(4, 6), 10) - 1;
-            const dateday = parseInt(date.substring(6, 8), 10);
-
-            const parsedOrder = new LegacyOrder();
-            parsedOrder.userId = userId;
-            parsedOrder.userName = userName;
-            parsedOrder.orderId = orderId;
-            parsedOrder.prodId = prodId;
-            parsedOrder.value = value;
-            parsedOrder.date = new Date(dateyear, datemonth, dateday);
-
-            const errors = await validate(parsedOrder)
-
-            if (errors.length > 0) {
-                return { success: false, data: [] };
-            }
-
-            orders.push(parsedOrder);
+        } catch (error) {
+            return { success: false, data: [] };
         }
+
 
         return { success: true, data: orders };
     }
