@@ -1,7 +1,3 @@
-import { Injectable } from '@nestjs/common';
-import { LegacyOrder } from 'src/_shared/legacy-util/legacy-converter';
-import { OrdersRepository } from './orders.repository';
-
 export interface Product {
     product_id: number;
     value: number;
@@ -20,14 +16,9 @@ export interface User {
     name: string;
 }
 
-export interface OrderResponse {
+export interface UserOrder {
     user_id: number;
     name: string;
     orders: Omit<Order, "user_id">[]
-}
-
-@Injectable()
-export class OrdersService {
-
 }
 

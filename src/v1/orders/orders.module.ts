@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
 import { OrdersController } from './orders.controller';
-import { OrdersService } from './orders.service';
-import { OrdersRepository } from './orders.repository';
 import { MemoryDbModule } from 'src/_shared/memory-db/memory-db.module';
+import { LegacyOrderModule } from 'src/_shared/legacy-order/legacy-order.module';
 
 @Module({
-  imports: [MemoryDbModule],
+  imports: [MemoryDbModule, LegacyOrderModule],
   controllers: [OrdersController],
-  providers: [OrdersService, OrdersRepository]
 })
 export class OrdersModule { }

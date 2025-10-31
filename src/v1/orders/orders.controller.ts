@@ -1,19 +1,18 @@
-import { BadRequestException, Body, Controller, FileTypeValidator, Get, NotFoundException, Param, ParseDatePipe, ParseFilePipe, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Controller, FileTypeValidator, Get, NotFoundException, Param, ParseFilePipe, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { extractOrderData, parseLegacyOrders } from 'src/_shared/legacy-util/legacy-converter';
 import { MemoryDbService } from 'src/_shared/memory-db/memory-db.service';
 import { QueryOrdersDto } from './dto/query-orders.dto';
+import { LegacyOrderService } from 'src/_shared/legacy-order/legacy-order.service';
 
 @Controller('v1/orders')
 export class OrdersController {
 
     constructor(
-        private readonly memoryDb: MemoryDbService
+        private readonly memoryDb: MemoryDbService,
+        private readonly legacyOrderService: LegacyOrderService,
+
     ) { }
 
-    /**
-     *  Endpoint to handle upload of order files from the legacy system 
-     */
     @Post()
     @UseInterceptors(FileInterceptor('file'))
     async uploadFile(@UploadedFile(new ParseFilePipe({
@@ -23,7 +22,7 @@ export class OrdersController {
     })) file: Express.Multer.File) {
         const content = file.buffer.toString('utf-8');
 
-        const { success, data: legacyOrders } = await parseLegacyOrders(content)
+        const { success, data: legacyOrders } = await this.legacyOrderService.parseLegacyOrders(content)
 
         if (!success) {
             throw new BadRequestException("Failed to parse orders, invalid entry found.")
@@ -31,7 +30,7 @@ export class OrdersController {
 
         console.log('Parsed legacy Orders:', legacyOrders.length);
 
-        const { orders, users } = extractOrderData(legacyOrders);
+        const { orders, users } = this.legacyOrderService.extractOrderData(legacyOrders);
         this.memoryDb.populateDb(orders, users);
 
         console.log('Orders imported:', orders.length);

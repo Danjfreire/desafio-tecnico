@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Order, OrderResponse, User } from 'src/v1/orders/orders.service';
+import { Order, UserOrder, User } from '../types/order.model';
 
 @Injectable()
 export class MemoryDbService {
@@ -16,13 +16,13 @@ export class MemoryDbService {
         }
     }
 
-    findOne(id: number): OrderResponse | null {
+    findOne(id: number): UserOrder | null {
         const order = this.orders.get(id);
         if (!order) {
             return null;
         }
 
-        const res: OrderResponse = {
+        const res: UserOrder = {
             user_id: order.user_id,
             name: this.users.get(order.user_id)!.name,
             orders: [{
@@ -36,7 +36,7 @@ export class MemoryDbService {
         return res;
     }
 
-    findMany(options: { startDate?: Date, endDate?: Date }): OrderResponse[] {
+    findMany(options: { startDate?: Date, endDate?: Date }): UserOrder[] {
 
         const validOrders = Array.from(this.orders.values()).filter(order => {
             if (options.startDate && order.date < options.startDate) {
@@ -50,7 +50,7 @@ export class MemoryDbService {
             return true;
         });
 
-        const resultsMap: Map<number, OrderResponse> = new Map();
+        const resultsMap: Map<number, UserOrder> = new Map();
 
         for (const order of validOrders) {
             let existing = resultsMap.get(order.user_id);
