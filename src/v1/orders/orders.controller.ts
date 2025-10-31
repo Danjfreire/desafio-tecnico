@@ -1,9 +1,12 @@
 import { BadRequestException, Controller, FileTypeValidator, Get, NotFoundException, Param, ParseFilePipe, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MemoryDbService } from 'src/_shared/memory-db/memory-db.service';
 import { QueryOrdersDto } from './dto/query-orders.dto';
 import { LegacyOrderService } from 'src/_shared/legacy-order/legacy-order.service';
+import { UserOrderResponse } from 'src/_shared/types/order-response.dto';
 
+@ApiTags('orders')
 @Controller('v1/orders')
 export class OrdersController {
 
@@ -13,6 +16,22 @@ export class OrdersController {
     ) { }
 
     @Post()
+    @ApiOperation({ summary: 'Import legacy orders from a text file' })
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'Legacy orders text file',
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                },
+            },
+        },
+    })
+    @ApiResponse({ status: 201, description: 'Orders successfully imported' })
+    @ApiResponse({ status: 400, description: 'Invalid file format or data' })
     @UseInterceptors(FileInterceptor('file'))
     async importLegacyOrders(@UploadedFile(new ParseFilePipe({
         validators: [
@@ -37,9 +56,16 @@ export class OrdersController {
     }
 
     @Get(':id')
+    @ApiOperation({ summary: 'Find an order by ID' })
+    @ApiResponse({
+        status: 200,
+        description: 'Order found successfully',
+        type: UserOrderResponse
+    })
+    @ApiResponse({ status: 404, description: 'Order not found' })
     findOrder(
         @Param('id') id: number
-    ) {
+    ): UserOrderResponse {
         const res = this.memoryDb.findOne(Number(id));
 
         if (!res) {
@@ -50,9 +76,16 @@ export class OrdersController {
     }
 
     @Get()
+    @ApiOperation({ summary: 'List all orders with optional date filtering' })
+    @ApiResponse({
+        status: 200,
+        description: 'List of orders retrieved successfully',
+        type: [UserOrderResponse]
+    })
+    @ApiResponse({ status: 400, description: 'Invalid date range' })
     listOrders(
         @Query() query?: QueryOrdersDto,
-    ) {
+    ): UserOrderResponse[] {
         const options = {
             startDate: query?.start_date ? new Date(query.start_date) : undefined,
             endDate: query?.end_date ? new Date(query.end_date) : undefined,

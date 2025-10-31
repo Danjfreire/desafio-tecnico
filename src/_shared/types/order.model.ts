@@ -19,6 +19,5 @@ export interface User {
 export interface UserOrder {
     user_id: number;
     name: string;
-    orders: Omit<Order, "user_id">[]
+    orders: Omit<Order, "user_id">[];
 }
-
