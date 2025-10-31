@@ -36,14 +36,14 @@ export class MemoryDbService {
         return res;
     }
 
-    findMany(options: { startDate?: Date, endDate?: Date }): UserOrder[] {
+    findMany(options?: { startDate?: Date, endDate?: Date }): UserOrder[] {
 
         const validOrders = Array.from(this.orders.values()).filter(order => {
-            if (options.startDate && order.date < options.startDate) {
+            if (options?.startDate && order.date < options.startDate) {
                 return false;
             }
 
-            if (options.endDate && order.date > options.endDate) {
+            if (options?.endDate && order.date > options.endDate) {
                 return false;
             }
 

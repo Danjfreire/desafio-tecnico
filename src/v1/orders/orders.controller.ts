@@ -10,12 +10,11 @@ export class OrdersController {
     constructor(
         private readonly memoryDb: MemoryDbService,
         private readonly legacyOrderService: LegacyOrderService,
-
     ) { }
 
     @Post()
     @UseInterceptors(FileInterceptor('file'))
-    async uploadFile(@UploadedFile(new ParseFilePipe({
+    async importLegacyOrders(@UploadedFile(new ParseFilePipe({
         validators: [
             new FileTypeValidator({ fileType: 'text/plain', skipMagicNumbersValidation: true }),
         ]
