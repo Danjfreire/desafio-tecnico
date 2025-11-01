@@ -17,7 +17,7 @@ export class OrderEntity {
     @Column('decimal', { precision: 10, scale: 2 })
     total: number;
 
-    @Column('date')
+    @Column('timestamp')
     date: Date;
 
     @OneToMany(() => OrderProductEntity, product => product.order, { eager: true, cascade: true })

@@ -1,20 +1,21 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Repository, DataSource, Between, MoreThanOrEqual, LessThanOrEqual, FindOptionsWhere } from 'typeorm';
 import { OrderEntity } from './entities/order.entity';
 import { UserEntity } from './entities/user.entity';
 import { OrderProductEntity } from './entities/order-product.entity';
 import { Order, User } from 'src/_shared/types/order.model';
 import { UserOrderResponse } from 'src/_shared/types/order-response.dto';
+import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
 
 @Injectable()
-export class OrdersService {
-    private orderRepository: Repository<OrderEntity>;
+export class OrdersV2Service {
 
     constructor(
-        @Inject('DATA_SOURCE')
+        @InjectDataSource()
         private dataSource: DataSource,
+        @InjectRepository(OrderEntity)
+        private orderRepository: Repository<OrderEntity>,
     ) {
-        this.orderRepository = this.dataSource.getRepository(OrderEntity);
     }
 
     async importOrders(orders: Order[], users: User[]): Promise<void> {

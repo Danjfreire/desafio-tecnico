@@ -4,14 +4,14 @@ import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestj
 import { LegacyOrderService } from 'src/_shared/legacy-order/legacy-order.service';
 import { UserOrderResponse } from 'src/_shared/types/order-response.dto';
 import { QueryOrdersDto } from 'src/_shared/types/query-orders.dto';
-import { OrdersService } from './orders.service';
+import { OrdersV2Service } from './orders.service';
 
 @ApiTags('orders-v2')
 @Controller('v2/orders')
 export class OrdersV2Controller {
 
     constructor(
-        private readonly ordersService: OrdersService,
+        private readonly ordersService: OrdersV2Service,
         private readonly legacyOrderService: LegacyOrderService,
     ) { }
 

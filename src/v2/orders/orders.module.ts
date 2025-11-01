@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { OrdersV2Controller } from './orders.controller';
-import { OrdersService } from './orders.service';
+import { OrdersV2Service } from './orders.service';
 import { LegacyOrderModule } from 'src/_shared/legacy-order/legacy-order.module';
-import { DatabaseModule } from 'src/_shared/database/database.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { OrderEntity } from './entities/order.entity';
 
 @Module({
-    imports: [DatabaseModule, LegacyOrderModule],
+    imports: [TypeOrmModule.forFeature([OrderEntity]), LegacyOrderModule],
     controllers: [OrdersV2Controller],
-    providers: [OrdersService],
+    providers: [OrdersV2Service],
 })
 export class OrdersV2Module { }
