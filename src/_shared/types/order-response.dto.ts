@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { OrderEntity } from "src/v2/orders/entities/order.entity";
 
 export class ProductResponse {
     @ApiProperty({ example: 1, description: 'Product ID' })
@@ -31,4 +32,36 @@ export class UserOrderResponse {
 
     @ApiProperty({ type: [OrderDetailResponse], description: 'List of orders for this user' })
     orders: OrderDetailResponse[];
+
+    static fromEntities(orders: OrderEntity[]): UserOrderResponse[] {
+        const userOrdersMap = new Map<number, UserOrderResponse>();
+
+        for (const order of orders) {
+            const userId = order.user.id;
+
+            if (!userOrdersMap.has(userId)) {
+                userOrdersMap.set(userId, {
+                    user_id: userId,
+                    name: order.user.name,
+                    orders: [],
+                });
+            }
+
+            userOrdersMap.get(userId)!.orders.push({
+                order_id: order.id,
+                total: Number(order.total),
+                date: order.date,
+                products: order.products.map(p => ({
+                    product_id: p.product_id,
+                    value: Number(p.value),
+                })),
+            });
+        }
+
+        return Array.from(userOrdersMap.values());
+    }
+
+    static fromEntity(order: OrderEntity): UserOrderResponse {
+        return this.fromEntities([order])[0];
+    }
 }

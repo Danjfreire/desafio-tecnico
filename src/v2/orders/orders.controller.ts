@@ -1,17 +1,17 @@
 import { BadRequestException, Controller, FileTypeValidator, Get, NotFoundException, Param, ParseFilePipe, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { MemoryDbService } from 'src/_shared/memory-db/memory-db.service';
-import { QueryOrdersDto } from '../../_shared/types/query-orders.dto';
 import { LegacyOrderService } from 'src/_shared/legacy-order/legacy-order.service';
 import { UserOrderResponse } from 'src/_shared/types/order-response.dto';
+import { QueryOrdersDto } from 'src/_shared/types/query-orders.dto';
+import { OrdersService } from './orders.service';
 
-@ApiTags('orders')
-@Controller('v1/orders')
-export class OrdersController {
+@ApiTags('orders-v2')
+@Controller('v2/orders')
+export class OrdersV2Controller {
 
     constructor(
-        private readonly memoryDb: MemoryDbService,
+        private readonly ordersService: OrdersService,
         private readonly legacyOrderService: LegacyOrderService,
     ) { }
 
@@ -49,7 +49,8 @@ export class OrdersController {
         console.log('Parsed legacy Orders:', legacyOrders.length);
 
         const { orders, users } = this.legacyOrderService.extractOrderData(legacyOrders);
-        this.memoryDb.populateDb(orders, users);
+
+        await this.ordersService.importOrders(orders, users);
 
         console.log('Orders imported:', orders.length);
         console.log('Users imported:', users.length);
@@ -63,10 +64,10 @@ export class OrdersController {
         type: UserOrderResponse
     })
     @ApiResponse({ status: 404, description: 'Order not found' })
-    findOrder(
+    async findOrder(
         @Param('id') id: number
-    ): UserOrderResponse {
-        const res = this.memoryDb.findOne(Number(id));
+    ): Promise<UserOrderResponse> {
+        const res = await this.ordersService.findOrderById(Number(id));
 
         if (!res) {
             throw new NotFoundException(`Order with id ${id} not found`);
@@ -83,9 +84,9 @@ export class OrdersController {
         type: [UserOrderResponse]
     })
     @ApiResponse({ status: 400, description: 'Invalid date range' })
-    listOrders(
+    async listOrders(
         @Query() query?: QueryOrdersDto,
-    ): UserOrderResponse[] {
+    ): Promise<UserOrderResponse[]> {
         const options = {
             startDate: query?.start_date ? new Date(query.start_date) : undefined,
             endDate: query?.end_date ? new Date(query.end_date) : undefined,
@@ -96,6 +97,6 @@ export class OrdersController {
             throw new BadRequestException("end_date must be greater than start_date");
         }
 
-        return this.memoryDb.findMany(options);
+        return this.ordersService.findOrders(options);
     }
 }
