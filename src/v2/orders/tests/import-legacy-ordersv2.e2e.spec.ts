@@ -10,6 +10,7 @@ import { OrderProductEntity } from '../entities/order-product.entity';
 import { OrdersV2Module } from '../orders.module';
 import { Client } from 'pg';
 import { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import { OrdersV2Service } from '../orders.service';
 
 const VALID_TEST_FILE_PATH = path.join(__dirname, '../../../../test_data/data_1.txt');
 const INVALID_FILE_FORMAT_PATH = path.join(__dirname, '../../../../test_data/invalid_file_type.json');
@@ -20,6 +21,7 @@ describe('OrdersV2Controller - importLegacyOrders (e2e)', () => {
     let app: INestApplication;
     let postgresClient: Client;
     let postgresContainer: StartedPostgreSqlContainer;
+    let orderService: OrdersV2Service;
 
     beforeAll(async () => {
         const { client, container } = await initPostgresTestContainer();
@@ -42,6 +44,8 @@ describe('OrdersV2Controller - importLegacyOrders (e2e)', () => {
             ],
         }).compile();
         app = module.createNestApplication();
+
+        orderService = module.get<OrdersV2Service>(OrdersV2Service);
         await app.init();
 
         jest.spyOn(console, 'log').mockImplementation();
@@ -57,6 +61,16 @@ describe('OrdersV2Controller - importLegacyOrders (e2e)', () => {
             .post('/v2/orders')
             .attach('file', VALID_TEST_FILE_PATH)
             .expect(201)
+
+        // the test file contains 100 users with a total of 1084 orders
+        const res = await orderService.findOrders();
+        expect(res.length).toEqual(100);
+
+        let orderCount = 0;
+        res.forEach(userOrder => {
+            orderCount += userOrder.orders.length;
+        });
+        expect(orderCount).toEqual(1084);
     });
 
     it('should return BadRequest (400) if file is missing', async () => {
