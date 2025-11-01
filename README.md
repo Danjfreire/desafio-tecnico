@@ -39,6 +39,7 @@ Foram implementados testes unitários, de integração e end-to-end utilizando J
 Para rodar os testes automatizados, execute o comando:
 
 ```
+npm install
 npm run test
 ```
 
