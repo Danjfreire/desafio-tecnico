@@ -12,8 +12,8 @@ O projeto utiliza uma arquitetura modular, separando as funcionalidades em difer
 
 Todas as funcionalidades foram implementadas em duas versões da API: v1 e v2.
 
-v1 - Utiliza armazenamento em memória para persistência dos dados dos pedidos.
-v2 - Utiliza banco de dados PostgreSQL para persistência dos dados dos pedidos.
+ - v1: Utiliza armazenamento em memória para persistência dos dados dos pedidos.
+ - v2: Utiliza banco de dados PostgreSQL para persistência dos dados dos pedidos.
 
 Obs: A versão v2 propositalmente não mantém os dados armazenados entre sessões.
 
